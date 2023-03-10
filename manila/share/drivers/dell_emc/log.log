@@ -1,0 +1,150 @@
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG oslo_service.periodic_task [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Running periodic task ShareManager.delete_expired_transfers {{(pid=535623) run_periodic_tasks /usr/local/lib/python3.10/dist-packages/oslo_service/periodic_task.py:210}}
+Mar 09 14:40:07 zd2 manila-share[535623]: INFO manila.share.manager [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Checking for expired transfers.
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG oslo_service.periodic_task [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Running periodic task ShareManager.periodic_share_replica_snapshot_update {{(pid=535623) run_periodic_tasks /usr/local/lib/python3.10/dist-packages/oslo_service/periodic_task.py:210}}
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG manila.share.manager [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Updating status of share replica snapshots. {{(pid=535623) periodic_share_replica_snapshot_update /opt/stack/manila/manila/share/manager.py:3989}}
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG oslo_service.periodic_task [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Running periodic task ShareManager._report_driver_status {{(pid=535623) run_periodic_tasks /usr/local/lib/python3.10/dist-packages/oslo_service/periodic_task.py:210}}
+Mar 09 14:40:07 zd2 manila-share[535623]: INFO manila.share.manager [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Updating share status
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG manila.share.driver [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Updating share stats. {{(pid=535623) _update_share_stats /opt/stack/manila/manila/share/driver.py:1321}}
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG oslo_service.periodic_task [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Running periodic task ShareManager._execute_periodic_hook {{(pid=535623) run_periodic_tasks /usr/local/lib/python3.10/dist-packages/oslo_service/periodic_task.py:210}}
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG oslo_service.periodic_task [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Running periodic task ShareManager.periodic_share_status_update {{(pid=535623) run_periodic_tasks /usr/local/lib/python3.10/dist-packages/oslo_service/periodic_task.py:210}}
+Mar 09 14:40:07 zd2 manila-share[535623]: DEBUG manila.share.manager [None req-8670250d-ccb0-44ba-9995-0c586b94d565 None None] Updating status of share instances. {{(pid=535623) periodic_share_status_update /opt/stack/manila/manila/share/manager.py:5068}}
+Mar 09 14:40:12 zd2 manila-share[533928]: DEBUG dbcounter [-] [533928] Writing DB stats manila:SELECT=31,manila:UPDATE=4 {{(pid=533928) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:12 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [-] Acquiring lock "singleton_lock" {{(pid=536264) lock /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:312}}
+Mar 09 14:40:12 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [-] Acquired lock "singleton_lock" {{(pid=536264) lock /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:315}}
+Mar 09 14:40:12 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [-] Releasing lock "singleton_lock" {{(pid=536264) lock /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:333}}
+Mar 09 14:40:13 zd2 manila-share[536264]: INFO oslo_service.periodic_task [-] Skipping periodic task update_share_usage_size because it is disabled
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Acquiring lock "instantiate_neutron_api" by "manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin.neutron_api" {{(pid=536264) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Lock "instantiate_neutron_api" acquired by "manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin.neutron_api" :: waited 0.001s {{(pid=536264) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Lock "instantiate_neutron_api" "released" by "manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin.neutron_api" :: held 0.001s {{(pid=536264) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:423}}
+Mar 09 14:40:13 zd2 manila-share[536264]: INFO oslo_service.service [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Starting 1 workers
+Mar 09 14:40:13 zd2 manila-share[536266]: INFO manila.service [-] Starting manila-share node (version 16.0.0)
+Mar 09 14:40:13 zd2 manila-share[536266]: DEBUG oslo_db.api [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Loading backend 'sqlalchemy' from 'manila.db.sqlalchemy.api' {{(pid=536266) _load_backend /usr/local/lib/python3.10/dist-packages/oslo_db/api.py:259}}
+Mar 09 14:40:13 zd2 manila-share[535552]: DEBUG dbcounter [-] [535552] Writing DB stats manila:SELECT=25,manila:UPDATE=2 {{(pid=535552) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_service.service [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Started child 536266 {{(pid=536264) _start_child /usr/local/lib/python3.10/dist-packages/oslo_service/service.py:575}}
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Acquiring lock "instantiate_neutron_api" by "manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin.neutron_api" {{(pid=536264) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Lock "instantiate_neutron_api" acquired by "manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin.neutron_api" :: waited 0.004s {{(pid=536264) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_concurrency.lockutils [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Lock "instantiate_neutron_api" "released" by "manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin.neutron_api" :: held 0.002s {{(pid=536264) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:423}}
+Mar 09 14:40:13 zd2 manila-share[536264]: INFO oslo_service.service [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Starting 1 workers
+Mar 09 14:40:13 zd2 manila-share[536264]: DEBUG oslo_service.service [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Started child 536267 {{(pid=536264) _start_child /usr/local/lib/python3.10/dist-packages/oslo_service/service.py:575}}
+Mar 09 14:40:13 zd2 manila-share[536267]: INFO manila.service [-] Starting manila-share node (version 16.0.0)
+Mar 09 14:40:13 zd2 manila-share[533927]: DEBUG dbcounter [-] [533927] Writing DB stats manila:SELECT=11,manila:UPDATE=2 {{(pid=533927) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:13 zd2 manila-share[536267]: DEBUG oslo_db.api [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Loading backend 'sqlalchemy' from 'manila.db.sqlalchemy.api' {{(pid=536267) _load_backend /usr/local/lib/python3.10/dist-packages/oslo_db/api.py:259}}
+Mar 09 14:40:13 zd2 manila-share[536264]: CRITICAL manila [None req-cb7d6fe1-c69a-4efd-b3c6-6f4c25f314db None None] Unhandled error: manila.exception.ManilaException: Config opt 'driver_handles_share_servers' has improper value - 'None'. Please define it as boolean.
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila Traceback (most recent call last):
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/usr/local/bin/manila-share", line 10, in <module>
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     sys.exit(main())
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/opt/stack/manila/manila/cmd/share.py", line 56, in main
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     server = service.Service.create(host=host,
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/opt/stack/manila/manila/service.py", line 232, in create
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     service_obj = cls(host, binary, topic, manager,
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/opt/stack/manila/manila/service.py", line 124, in __init__
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     self.manager = manager_class(host=self.host,
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/opt/stack/manila/manila/share/manager.py", line 276, in __init__
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     self.driver = importutils.import_object(
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/usr/local/lib/python3.10/dist-packages/oslo_utils/importutils.py", line 44, in import_object
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     return import_class(import_str)(*args, **kwargs)
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/opt/stack/manila/manila/share/drivers/generic.py", line 125, in __init__
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     super(GenericShareDriver, self).__init__(
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/opt/stack/manila/manila/share/driver.py", line 305, in __init__
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     self._verify_share_server_handling(driver_handles_share_servers)
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila   File "/opt/stack/manila/manila/share/driver.py", line 362, in _verify_share_server_handling
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila     raise exception.ManilaException(
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila manila.exception.ManilaException: Config opt 'driver_handles_share_servers' has improper value - 'None'. Please define it as boolean.
+Mar 09 14:40:13 zd2 manila-share[536264]: ERROR manila 
+Mar 09 14:40:14 zd2 manila-share[534595]: DEBUG dbcounter [-] [534595] Writing DB stats manila:SELECT=14,manila:UPDATE=3 {{(pid=534595) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:14 zd2 manila-share[535067]: DEBUG dbcounter [-] [535067] Writing DB stats manila:SELECT=11,manila:UPDATE=2 {{(pid=535067) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:14 zd2 manila-share[535623]: DEBUG dbcounter [-] [535623] Writing DB stats manila:SELECT=32,manila:UPDATE=3 {{(pid=535623) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:14 zd2 manila-share[536266]: INFO dbcounter [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Registered counter for database manila
+Mar 09 14:40:14 zd2 manila-share[536266]: INFO oslo_service.service [-] Parent process has died unexpectedly, exiting
+Mar 09 14:40:14 zd2 manila-share[536267]: INFO dbcounter [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Registered counter for database manila
+Mar 09 14:40:14 zd2 manila-share[536267]: INFO oslo_service.service [-] Parent process has died unexpectedly, exiting
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_db.sqlalchemy.engines [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] MySQL server mode set to STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,TRADITIONAL,NO_ENGINE_SUBSTITUTION {{(pid=536266) _check_effective_sql_mode /usr/local/lib/python3.10/dist-packages/oslo_db/sqlalchemy/engines.py:335}}
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG oslo_db.sqlalchemy.engines [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] MySQL server mode set to STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,TRADITIONAL,NO_ENGINE_SUBSTITUTION {{(pid=536267) _check_effective_sql_mode /usr/local/lib/python3.10/dist-packages/oslo_db/sqlalchemy/engines.py:335}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG dbcounter [-] [536266] Writer thread running {{(pid=536266) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:99}}
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG dbcounter [-] [536267] Writer thread running {{(pid=536267) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:99}}
+Mar 09 14:40:15 zd2 manila-share[534594]: DEBUG dbcounter [-] [534594] Writing DB stats manila:SELECT=24,manila:UPDATE=4 {{(pid=534594) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:15 zd2 manila-share[535068]: DEBUG dbcounter [-] [535068] Writing DB stats manila:SELECT=24,manila:UPDATE=3 {{(pid=535068) stat_writer /usr/local/lib/python3.10/dist-packages/dbcounter.py:114}}
+Mar 09 14:40:15 zd2 manila-share[536266]: Traceback (most recent call last):
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/eventlet/hubs/hub.py", line 476, in fire_timers
+Mar 09 14:40:15 zd2 manila-share[536266]:     timer()
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/eventlet/hubs/timer.py", line 59, in __call__
+Mar 09 14:40:15 zd2 manila-share[536266]:     cb(*args, **kw)
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_service/service.py", line 482, in _pipe_watcher
+Mar 09 14:40:15 zd2 manila-share[536266]:     self.launcher.stop()
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_service/service.py", line 288, in stop
+Mar 09 14:40:15 zd2 manila-share[536266]:     self.services.stop()
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_service/service.py", line 761, in stop
+Mar 09 14:40:15 zd2 manila-share[536266]:     service.stop()
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/opt/stack/manila/manila/service.py", line 257, in stop
+Mar 09 14:40:15 zd2 manila-share[536266]:     db.service_update(context.get_admin_context(),
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/opt/stack/manila/manila/db/api.py", line 133, in service_update
+Mar 09 14:40:15 zd2 manila-share[536266]:     return IMPL.service_update(context, service_id, values)
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 154, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536266]:     return f(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_db/api.py", line 144, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536266]:     with excutils.save_and_reraise_exception() as ectxt:
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_utils/excutils.py", line 227, in __exit__
+Mar 09 14:40:15 zd2 manila-share[536266]:     self.force_reraise()
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_utils/excutils.py", line 200, in force_reraise
+Mar 09 14:40:15 zd2 manila-share[536266]:     raise self.value
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_db/api.py", line 142, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536266]:     return f(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/usr/local/lib/python3.10/dist-packages/oslo_db/sqlalchemy/enginefacade.py", line 1022, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536266]:     return fn(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 660, in service_update
+Mar 09 14:40:15 zd2 manila-share[536266]:     service_ref = _service_get(context, service_id)
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 154, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536266]:     return f(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536266]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 534, in _service_get
+Mar 09 14:40:15 zd2 manila-share[536266]:     raise exception.ServiceNotFound(service_id=service_id)
+Mar 09 14:40:15 zd2 manila-share[536266]: manila.exception.ServiceNotFound: Service None could not be found.
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG manila.share.manager [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Start initialization of driver: 'GenericShareDriver@zd2@generic1' {{(pid=536266) _driver_setup /opt/stack/manila/manila/share/manager.py:354}}
+Mar 09 14:40:15 zd2 manila-share[536267]: Traceback (most recent call last):
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/eventlet/hubs/hub.py", line 476, in fire_timers
+Mar 09 14:40:15 zd2 manila-share[536267]:     timer()
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/eventlet/hubs/timer.py", line 59, in __call__
+Mar 09 14:40:15 zd2 manila-share[536267]:     cb(*args, **kw)
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_service/service.py", line 482, in _pipe_watcher
+Mar 09 14:40:15 zd2 manila-share[536267]:     self.launcher.stop()
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_service/service.py", line 288, in stop
+Mar 09 14:40:15 zd2 manila-share[536267]:     self.services.stop()
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_service/service.py", line 761, in stop
+Mar 09 14:40:15 zd2 manila-share[536267]:     service.stop()
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/opt/stack/manila/manila/service.py", line 257, in stop
+Mar 09 14:40:15 zd2 manila-share[536267]:     db.service_update(context.get_admin_context(),
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/opt/stack/manila/manila/db/api.py", line 133, in service_update
+Mar 09 14:40:15 zd2 manila-share[536267]:     return IMPL.service_update(context, service_id, values)
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 154, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536267]:     return f(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_db/api.py", line 144, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536267]:     with excutils.save_and_reraise_exception() as ectxt:
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_utils/excutils.py", line 227, in __exit__
+Mar 09 14:40:15 zd2 manila-share[536267]:     self.force_reraise()
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_utils/excutils.py", line 200, in force_reraise
+Mar 09 14:40:15 zd2 manila-share[536267]:     raise self.value
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_db/api.py", line 142, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536267]:     return f(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/usr/local/lib/python3.10/dist-packages/oslo_db/sqlalchemy/enginefacade.py", line 1022, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536267]:     return fn(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 660, in service_update
+Mar 09 14:40:15 zd2 manila-share[536267]:     service_ref = _service_get(context, service_id)
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 154, in wrapper
+Mar 09 14:40:15 zd2 manila-share[536267]:     return f(*args, **kwargs)
+Mar 09 14:40:15 zd2 manila-share[536267]:   File "/opt/stack/manila/manila/db/sqlalchemy/api.py", line 534, in _service_get
+Mar 09 14:40:15 zd2 manila-share[536267]:     raise exception.ServiceNotFound(service_id=service_id)
+Mar 09 14:40:15 zd2 manila-share[536267]: manila.exception.ServiceNotFound: Service None could not be found.
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG manila.share.manager [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Start initialization of driver: 'GenericShareDriver@zd2@generic2' {{(pid=536267) _driver_setup /opt/stack/manila/manila/share/manager.py:354}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Acquiring lock "instantiate_network_helper" by "manila.share.drivers.service_instance.ServiceInstanceManager.network_helper" {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Lock "instantiate_network_helper" acquired by "manila.share.drivers.service_instance.ServiceInstanceManager.network_helper" :: waited 0.001s {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Acquiring lock "service_network_id_neutron_net_helper" by "manila.share.drivers.service_instance.NeutronNetworkHelper.service_network_id" {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Lock "service_network_id_neutron_net_helper" acquired by "manila.share.drivers.service_instance.NeutronNetworkHelper.service_network_id" :: waited 0.000s {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Acquiring lock "service_instance_get_service_network" by "manila.share.drivers.service_instance.NeutronNetworkHelper._get_service_network_id" {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Lock "service_instance_get_service_network" acquired by "manila.share.drivers.service_instance.NeutronNetworkHelper._get_service_network_id" :: waited 0.003s {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Acquiring lock "instantiate_neutron_api_neutron_net_helper" by "manila.share.drivers.service_instance.NeutronNetworkHelper.neutron_api" {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Lock "instantiate_neutron_api_neutron_net_helper" acquired by "manila.share.drivers.service_instance.NeutronNetworkHelper.neutron_api" :: waited 0.000s {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:15 zd2 manila-share[536266]: DEBUG oslo_concurrency.lockutils [None req-a589ede4-2051-4ad2-b89e-a5a54013993c None None] Lock "instantiate_neutron_api_neutron_net_helper" "released" by "manila.share.drivers.service_instance.NeutronNetworkHelper.neutron_api" :: held 0.001s {{(pid=536266) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:423}}
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG oslo_concurrency.lockutils [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Acquiring lock "instantiate_network_helper" by "manila.share.drivers.service_instance.ServiceInstanceManager.network_helper" {{(pid=536267) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG oslo_concurrency.lockutils [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Lock "instantiate_network_helper" acquired by "manila.share.drivers.service_instance.ServiceInstanceManager.network_helper" :: waited 0.001s {{(pid=536267) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG oslo_concurrency.lockutils [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Acquiring lock "service_network_id_neutron_net_helper" by "manila.share.drivers.service_instance.NeutronNetworkHelper.service_network_id" {{(pid=536267) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG oslo_concurrency.lockutils [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Lock "service_network_id_neutron_net_helper" acquired by "manila.share.drivers.service_instance.NeutronNetworkHelper.service_network_id" :: waited 0.000s {{(pid=536267) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:409}}
+Mar 09 14:40:15 zd2 manila-share[536267]: DEBUG oslo_concurrency.lockutils [None req-aa851eff-9bd2-4419-96fd-346df0736271 None None] Acquiring lock "service_instance_get_service_network" by "manila.share.drivers.service_instance.NeutronNetworkHelper._get_service_network_id" {{(pid=536267) inner /usr/local/lib/python3.10/dist-packages/oslo_concurrency/lockutils.py:404}}
