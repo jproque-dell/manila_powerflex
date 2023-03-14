@@ -25,8 +25,9 @@ from requests.exceptions import HTTPError
 from manila.common import constants as const
 from manila import exception
 from manila.i18n import _
-from manila.share.drivers.dell_emc.plugins import base
-from manila.share.drivers.dell_emc.plugins.powerflex import powerflex_api
+from manila.share.drivers.dell_emc.plugins import base as driver
+from manila.share.drivers.dell_emc.plugins.powerflex import (
+    object_manager as manager )
 
 CONF = cfg.CONF
 VERSION = "1.0"
@@ -34,11 +35,12 @@ VERSION = "1.0"
 LOG = log.getLogger(__name__)
 
 
-class PowerFlexStorageConnection(base.StorageConnection):
+class PowerFlexStorageConnection(driver.StorageConnection):
     """Implements PowerFlex specific functionality for Dell Manila driver."""
 
     def __init__(self, *args, **kwargs):
         super(PowerFlexStorageConnection, self).__init__(*args, **kwargs)
+        self.manager = None
         self.server = None
         self._username = None
         self._password = None
@@ -46,13 +48,54 @@ class PowerFlexStorageConnection(base.StorageConnection):
         self._root_dir = None
         self._verify_ssl_cert = None
         self._shares = {}
+        self.verify_certificate = None
 
-        self._powerflex_api = None
-        self._powerflex_api_class = powerflex_api.PowerFlexApi
         self.driver_handles_share_servers = False
+
+    def connect(self, dell_share_driver, context):
+        """Connect to PowerFlex SDNAS server."""
+        config = dell_share_driver.configuration
+        get_config_value = config.safe_get
+        self.verify_certificates = get_config_value("dell_ssl_cert_verify")
+        self.rest_ip = get_config_value("emc_nas_server")
+        self.rest_port = int(
+            get_config_value("emc_nas_server_port") or
+            443)
+        self.rest_username = get_config_value("emc_nas_login")
+        self.rest_password = get_config_value("emc_nas_password")
+        if self.verify_certificate:
+            self.certificate_path = get_config_value("dell_ssl_cert_pathicate_path")
+        if not all([self.rest_ip, self.rest_username, self.rest_password]):
+            message = _("REST server IP, username and password must be specified.")
+            raise exception.InvalidInput(reason=message)
+        # validate certificate settings
+        if self.verify_certificate and not self.certificate_path:
+            message = _("Path to REST server's certificate must be specified.")
+            raise exception.InvalidInput(reason=msg)
+        self.base_url = ("https://%(server_ip)s:%(server_port)s/rest" %
+                         {
+                             "server_ip": self.rest_ip,
+                             "server_port": self.rest_port
+                        })
+        LOG.info("REST server IP: %(ip)s, port: %(port)s, "
+                 "username: %(user)s. Verify server's certificate: "
+                 "%(verify_cert)s.",
+                 {
+                     "ip": self.rest_ip,
+                     "port": self.rest_port,
+                     "user": self.rest_username,
+                     "verify_cert": self.verify_certificate,
+                 })
+
+        self.manager = manager.StorageObjectManager(self.base_url,
+                                                    self.rest_username,
+                                                    self.rest_password,
+                                                    self.verify_certificate)
+
 
     def create_share(self, context, share, share_server):
         """Is called to create a share."""
+        LOG.info(f"SHARE SERVER IS: {share_server}")
         if share['share_proto'].upper() == 'NFS':
             location = self._create_nfs_share(share)
         else:
@@ -96,7 +139,15 @@ class PowerFlexStorageConnection(base.StorageConnection):
     def check_for_setup_error(self):
         pass
 
-    def _create_nfs_share(self, share_name, share_server):
+    def _create_nfs_share(self, share):
         """ Create an NFS share."""
-        LOG.info("Calling PowerFlex API")
+        share_created = self.manager.create_nfs_export("test")
+        if not share_created:
+            message = (
+                _('The requested NFS share "%(share)s" was not created.') %
+                 {'share': share['name']})
+            LOG.error(message)
+            raise exception.ShareBackendException(msg=message)
+        location = '{0}:{1}'.format(self._server, container_path)
+        return location
 
