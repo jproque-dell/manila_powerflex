@@ -77,6 +77,15 @@ class StorageObjectManager(object):
         LOG.info(f"RESPONSE IN POST IS: {response}")
         return res, response
 
+    def execute_powerflex_delete_request(self, url, **url_params):
+      request = url % url_param
+      res = requests.delete(request,
+                            headers=self._get_headers(),
+                            verify=self._get_verify_cert())
+      res = self._check_response(res, request)
+      response = res.json()
+      return res, response
+
     def _check_response(self,
                         response,
                         request,
@@ -158,10 +167,20 @@ class StorageObjectManager(object):
         if res.status_code == 201:
             return response["id"] 
 
-    def get_nfs_export(self, export_id):
-        """Retrieves NFS Export properties.
+    def delete_nfs_export(self, export_path):
+        """Delete an NFS export.
 
-        :id: id of the share
+        :param export_path: a string specifying the desired export path
+        :return: ID of the export if deleted successfully
+        """
+        nfs_export_id = self.get_nfs_export_id(export_path)
+        LOG.info(f"EXPORT ID: {export_id}")
+
+
+    def get_nfs_export_name(self, export_id):
+        """Retrieves NFS Export name.
+
+        :export_id: id of the export
         :return: path of the export
         """
         url = self.base_url + '/v1/nfs-exports/' + export_id + '?select=*'
@@ -178,6 +197,19 @@ class StorageObjectManager(object):
         url = self.base_url + \
               '/v1/file-systems?select=id&name=eq.' + \
               export_path
+        res, response = self.execute_powerflex_get_request(url)
+        if res.status_code == 200:
+            return response[0]['id']
+
+    def get_nfs_export_id(self, export_name):
+        """Retrieves NFS Export ID.
+
+        :export_name: name of the export
+        :return: id of the export
+        """
+        url = self.base_url + \
+              '/v1/nfs-exports?select=id&name=eq.' + \
+              export_name
         res, response = self.execute_powerflex_get_request(url)
         if res.status_code == 200:
             return response[0]['id']
