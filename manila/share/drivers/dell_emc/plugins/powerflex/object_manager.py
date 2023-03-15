@@ -15,29 +15,44 @@
 
 import json
 import requests
-from oslo_log import log
+import six
+from six.moves import http_client
+from six.moves import urllib
 
-LOG = log.getLogger(__name__)
+
+from oslo_log import log as logging
+
+LOG = logging.getLogger(__name__)
 
 class StorageObjectManager(object):
 
-    def __init__(self, api_url, username, password, verify_ssl_cert=False):
+    def __init__(self, api_url, username, password, export_path, verify_ssl_cert=False):
         self.base_url = api_url
-        self.rest_username = None
-        self.rest_password = None
+        self.rest_username = username
+        self.rest_password = password
         self.rest_token = None
+        self.got_token = False
+        self.export_path = export_path
         
         self.verify_certificate = verify_ssl_cert
 
-    @staticmethod
-    def _get_headers():
-        return {"content-type": "application/json"}
+    def _get_headers(self):
+        if self.got_token:
+            return {"Content-type": "application/json",
+                    "Accept": "application/json",
+                    "Authorization": "Bearer " + self.rest_token}
+        else:
+            return {"Content-type": "application/json",
+                    "Accept": "application/json"}
 
     def execute_powerflex_get_request(self, url, **url_params):
-        request = self.base_url + url % url_params
+        request = url % url_params
         res = requests.get(request,
-                           auth=(self.rest_username, self.rest_token),
+                           headers=self._get_headers(),
                            verify=self._get_verify_cert())
+        LOG.info(f"REQUEST IN GET IS: {request}")
+        LOG.info(f"HEADERS IN GET iARE: {self._get_headers()}")
+        LOG.info(f"RES IN GET IS: {res.__dict__}")
         res = self._check_response(res, request)
         response = res.json()
         return res, response
@@ -45,18 +60,21 @@ class StorageObjectManager(object):
     def execute_powerflex_post_request(self, url, params=None, **url_params):
         if not params:
             params = {}
-        request = self.base_url + url % url_params
+        request = url % url_params
+        LOG.info(f"HEADERS ARE: {self._get_headers()}")
+        LOG.info(f"DATA IS: {json.dumps(params)}")
         res = requests.post(request,
                              data=json.dumps(params),
                              headers=self._get_headers(),
-                             auth=(self.rest_username, self.rest_token),
                              verify=self._get_verify_cert())
         res = self._check_response(res, request, False, params)
+        LOG.info(f"RES IN POST IS: {res.__dict__}")
         response = None
         try:
             response = res.json()
         except ValueError:
             response = None
+        LOG.info(f"RESPONSE IN POST IS: {response}")
         return res, response
 
     def _check_response(self,
@@ -70,31 +88,33 @@ class StorageObjectManager(object):
                 response.status_code == http_client.FORBIDDEN):
             LOG.info("Dell PowerFlex token is invalid, going to re-login "
                      "and get a new one.")
-            login.request = self.base_url + login_url
+            login_request = self.base_url + login_url
             verify_cert = self._get_verify_cert()
+            self.got_token=False
+            payload = json.dumps({"username": self.rest_username,
+                                   "password": self.rest_password
+                      })
+            LOG.info(f"PAYLOAD IN CHECK IS: {self._get_headers()}")
             res = requests.post(login_request,
-                                auth=(self.rest_username, self.rest_password),
+                                headers=self._get_headers(),
+                                data=payload,
                                 verify=verify_cert)
-            token = res.json()
+            token = res.json()["access_token"]
             self.rest_token = token
+            self.got_token = True
+            LOG.info(f"TOKEN IS: {self.rest_token} AND GOT_TOKEN IS: {self.got_token}")
             LOG.info("Going to perform request again %s with valid token.",
                      request)
             if is_get_request:
                 response = requests.get(request,
-                                        auth=(
-                                            self.rest_username,
-                                            self.rest_token
-                                            ),
+                                        headers=self._get_headers(),
                                         verify=verify_cert)
             else:
-                response = request.post(request,
-                                        data=json.dumps(params),
+                response = requests.post(request,
                                         headers=self._get_headers(),
-                                        auth=(
-                                            self.rest_username,
-                                            self.rest_token
-                                            ),
+                                        data=json.dumps(params),
                                         verify=verify_cert)
+                LOG.info(f"HEADERS IN CHECK ARE: {self._get_headers()}")
             level = logging.DEBUG
             if response.status_code != http_client.OK:
                 level = logging.ERROR
@@ -106,6 +126,7 @@ class StorageObjectManager(object):
                     "REST RESPONSE: %s with params %s",
                     response.status_code,
                     response.text)
+            LOG.info(f"RESPONSE IN CHECK IS: {response.__dict__}")
         return response
 
     def _get_verify_cert(self):
@@ -118,11 +139,13 @@ class StorageObjectManager(object):
         """Creates an NFS export.
         .
         :param export_path: a string specifying the desired export path
-        :return: "True" if created successfully; "False" otherwise
+        :return: ID of the export if created successfully
         """
+        fs_id = self.get_filesystem_id(export_path)
+        LOG.info(f"FS ID IS: {fs_id}")
         params = {
-                  "file_system_id": "64089d68-b418-bd46-5342-5eebf5c89622",
-                  "path": "/testFS",
+                  "file_system_id": fs_id,
+                  "path": "/" + str(export_path),
                   "name": "testExportManila",
                   "description": "test Export Manila",
                   "default_access": "NO_ACCESS",
@@ -131,7 +154,31 @@ class StorageObjectManager(object):
                       "10.225.109.43"
                   ]}
         url = self.base_url + '/v1/nfs-exports'
-        LOG.info(f"DATA IS: {params}, URL IS: {url}")
-        response = self.execute_powerflex_post_request(url, params)
-        LOG.info(response)
-        return response.status_code == 201 
+        res, response = self.execute_powerflex_post_request(url, params)
+        if res.status_code == 201:
+            return response["id"] 
+
+    def get_nfs_export(self, export_id):
+        """Retrieves NFS Export properties.
+
+        :id: id of the share
+        :return: path of the export
+        """
+        url = self.base_url + '/v1/nfs-exports/' + export_id + '?select=*'
+        res, response = self.execute_powerflex_get_request(url)
+        if res.status_code == 200:
+            return response["name"] 
+
+    def get_filesystem_id(self, export_path):
+        """Retrieves an ID for a filesystem.
+
+        :export_path: pathname of the filesystem
+        :return: ID of the filesystem
+        """
+        url = self.base_url + \
+              '/v1/file-systems?select=id&name=eq.' + \
+              export_path
+        res, response = self.execute_powerflex_get_request(url)
+        if res.status_code == 200:
+            return response[0]['id']
+

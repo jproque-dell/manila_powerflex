@@ -49,6 +49,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         self._verify_ssl_cert = None
         self._shares = {}
         self.verify_certificate = None
+        self.export_path = None
 
         self.driver_handles_share_servers = False
 
@@ -58,9 +59,9 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         get_config_value = config.safe_get
         self.verify_certificates = get_config_value("dell_ssl_cert_verify")
         self.rest_ip = get_config_value("emc_nas_server")
-        self.rest_port = int(
-            get_config_value("emc_nas_server_port") or
-            443)
+        self.rest_port = (int(get_config_value("emc_nas_server_port")) or
+                         443)
+        self.export_path = get_config_value("emc_nas_root_dir")
         self.rest_username = get_config_value("emc_nas_login")
         self.rest_password = get_config_value("emc_nas_password")
         if self.verify_certificate:
@@ -90,6 +91,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         self.manager = manager.StorageObjectManager(self.base_url,
                                                     self.rest_username,
                                                     self.rest_password,
+                                                    self.export_path,
                                                     self.verify_certificate)
 
 
@@ -141,13 +143,13 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def _create_nfs_share(self, share):
         """ Create an NFS share."""
-        share_created = self.manager.create_nfs_export("test")
-        if not share_created:
+        share_id = self.manager.create_nfs_export(self.export_path)
+        if not share_id:
             message = (
                 _('The requested NFS share "%(share)s" was not created.') %
                  {'share': share['name']})
             LOG.error(message)
             raise exception.ShareBackendException(msg=message)
-        location = '{0}:{1}'.format(self._server, container_path)
+        share_full_path = self.manager.get_nfs_export(share_id)
+        location = '{0}:/{1}'.format(self.rest_ip, share_full_path)
         return location
-
