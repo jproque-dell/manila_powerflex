@@ -77,7 +77,8 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         self.rest_port = (int(get_config_value("emc_nas_server_port")) or
                          443)
         self.nas_server = get_config_value("emc_nas_root_dir")
-        self.storage_pool = get_config_value("emc_nas_storage_pool")
+        self.storage_pool = get_config_value("powerflex_storage_pool")
+        self.protection_domain = get_config_value("powerflex_protection_domain")
         self.rest_username = get_config_value("emc_nas_login")
         self.rest_password = get_config_value("emc_nas_password")
         if self.verify_certificate:
@@ -165,26 +166,35 @@ class PowerFlexStorageConnection(driver.StorageConnection):
     def _create_nfs_share(self, share):
         """Create an NFS share. 
            In PowerFlex, an exporti(share) belongs to a filesystem. """
-        filesystem_id = self.manager.create_filesystem(self.nas_server,
-                                                       share['name'],
-                                                       share['size'])
-        if not filesystem_id:
-            message = {
-                _('The requested NFS export "%(share)s" was not created.') %
-                 {'share': share['name']}}
+        size_in_bytes = share['size'] * 1024 * 1024 * 1024
+        # Minimum size is 3GiB, that is 3221225472 bytes
+        if size_in_bytes >= 3221225472:
+            filesystem_id = self.manager.create_filesystem(self.nas_server,
+                                                           share['name'],
+                                                           size_in_bytes)
+            if not filesystem_id:
+                message = {
+                    _('The requested NFS export "%(share)s" was not created.') %
+                     {'share': share['name']}}
+                LOG.error(message)
+                raise exception.ShareBackendException(message)
+            else:
+                share_id = self.manager.create_nfs_export(filesystem_id, share['name'])
+                if not share_id:
+                    message = (
+                        _('The requested NFS export "%(share)s" was not created.') %
+                         {'share': share['name']})
+                    LOG.error(message)
+                    raise exception.ShareBackendException(msg=message)
+                share_path = self.manager.get_nfs_export_name(share_id)
+                location = '{0}:/{1}'.format(self.rest_ip, share_path)
+            return location
+        else:
+            message = (
+                _('The requested size for "%(share)s must be bigger than 3GiB.') %
+                 {'share': share['name']})
             LOG.error(message)
             raise exception.ShareBackendException(message)
-        else:
-            share_id = self.manager.create_nfs_export(filesystem_id, share['name'])
-            if not share_id:
-                message = (
-                    _('The requested NFS export "%(share)s" was not created.') %
-                     {'share': share['name']})
-                LOG.error(message)
-                raise exception.ShareBackendException(msg=message)
-            share_path = self.manager.get_nfs_export_name(share_id)
-            location = '{0}:/{1}'.format(self.rest_ip, share_path)
-        return location
 
     def _delete_nfs_share(self, share):
         """Delete an NFS share."""

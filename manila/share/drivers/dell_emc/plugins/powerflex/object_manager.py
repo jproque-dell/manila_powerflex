@@ -153,10 +153,10 @@ class StorageObjectManager(object):
         :return: ID of the filesystem if created successfully
         """
         nas_server_id = self.get_nas_server_id(nas_server)
-        size_in_bytes = (size / 1024 / 1024 /1024)
         params = {
                   "name": name,
-                  "size_total": 53687091200,
+                  "size_total": size,
+                  #todo: get the storage pool ID
                   "storage_pool_id": "419274ec00000000",
                   "nas_server_id": nas_server_id
                  }
