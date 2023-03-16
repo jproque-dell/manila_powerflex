@@ -143,25 +143,41 @@ class StorageObjectManager(object):
         if self.verify_certificate:
             verify_cert = self.certificate_path
         return verify_cert
+
+    def create_filesystem(self, nas_server, name, size):
+        """Create a filesystem
+        
+        :param nas_server: name of the nas_server
+        :param name: name of the filesystem
+        :param size: size in GiB
+        :return: ID of the filesystem if created successfully
+        """
+        nas_server_id = self.get_nas_server_id(nas_server)
+        size_in_bytes = (size / 1024 / 1024 /1024)
+        params = {
+                  "name": name,
+                  "size_total": 53687091200,
+                  "storage_pool_id": "419274ec00000000",
+                  "nas_server_id": nas_server_id
+                 }
+        url = self.base_url + '/v1/file-systems'
+        res, response = self.execute_powerflex_post_request(url, params)
+        if res.status_code == 201:
+            return response["id"]
    
-    def create_nfs_export(self, export_path):
+    def create_nfs_export(self, filesystem_id, name):
         """Creates an NFS export.
         .
-        :param export_path: a string specifying the desired export path
+        :param filesystem_id: ID of the filesystem on which
+                              the export will be created
+        :param name: 
         :return: ID of the export if created successfully
         """
-        fs_id = self.get_filesystem_id(export_path)
-        LOG.info(f"FS ID IS: {fs_id}")
         params = {
-                  "file_system_id": fs_id,
-                  "path": "/" + str(export_path),
-                  "name": "testExportManila",
-                  "description": "test Export Manila",
-                  "default_access": "NO_ACCESS",
-                  "min_security": "SYS",
-                  "read_write_root_hosts": [
-                      "10.225.109.43"
-                  ]}
+                  "file_system_id": filesystem_id,
+                  "path": "/" + str(name),
+                  "name": name
+                  }
         url = self.base_url + '/v1/nfs-exports'
         res, response = self.execute_powerflex_post_request(url, params)
         if res.status_code == 201:
@@ -176,6 +192,18 @@ class StorageObjectManager(object):
         nfs_export_id = self.get_nfs_export_id(export_path)
         LOG.info(f"EXPORT ID: {export_id}")
 
+    def get_nas_server_id(self, nas_server):
+        """Retrieves the NAS server ID.
+
+        :param nas_server: a string specifying the NAS server name 
+        :return: ID of the NAS server
+        """
+        url = self.base_url + \
+              '/v1/nas-servers?select=id&name=eq.' + \
+              nas_server
+        res, response = self.execute_powerflex_get_request(url)
+        if res.status_code == 200:
+            return response[0]['id']
 
     def get_nfs_export_name(self, export_id):
         """Retrieves NFS Export name.
@@ -214,3 +242,5 @@ class StorageObjectManager(object):
         if res.status_code == 200:
             return response[0]['id']
 
+    def delete_nfs_share(self):
+        pass
