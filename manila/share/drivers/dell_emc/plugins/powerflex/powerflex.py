@@ -29,10 +29,22 @@ from manila.share.drivers.dell_emc.plugins import base as driver
 from manila.share.drivers.dell_emc.plugins.powerflex import (
     object_manager as manager )
 
-CONF = cfg.CONF
+"""Version history:
+    1.0 - Initial version
+"""
+
 VERSION = "1.0"
 
+CONF = cfg.CONF
+
 LOG = log.getLogger(__name__)
+
+POWERFLEX_OPTS = [
+    cfg.StrOpt('powerflex_storage_pool',
+               help='Storage pool used to provision NAS.'),
+    cfg.StrOpt('powerflex_protection_domain',
+               help='Protection domaian to use.')
+]
 
 
 class PowerFlexStorageConnection(driver.StorageConnection):
@@ -40,6 +52,9 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def __init__(self, *args, **kwargs):
         super(PowerFlexStorageConnection, self).__init__(*args, **kwargs)
+        if 'configuration' in kwargs:
+            kwargs['configuration'].append_config_values(POWERFLEX_OPTS)
+
         self.manager = None
         self.server = None
         self._username = None

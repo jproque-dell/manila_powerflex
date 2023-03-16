@@ -53,8 +53,6 @@ EMC_NAS_OPTS = [
                help='Can be used to specify a non default path to a '
                     'CA_BUNDLE file or directory with certificates of trusted '
                     'CAs, which will be used to validate the backend.'),
-    cfg.StrOpt('emc_nas_storage_pool',
-               help='The storage pool where filesystems will be located.'),
 ]
 
 LOG = log.getLogger(__name__)
