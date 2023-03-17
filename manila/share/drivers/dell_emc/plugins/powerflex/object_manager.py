@@ -50,10 +50,7 @@ class StorageObjectManager(object):
         res = requests.get(request,
                            headers=self._get_headers(),
                            verify=self._get_verify_cert())
-        LOG.info(f"REQUEST IN GET IS: {request}")
-        LOG.info(f"HEADERS IN GET iARE: {self._get_headers()}")
-        LOG.info(f"RES IN GET IS: {res.__dict__}")
-        res = self._check_response(res, request)
+        res = self._check_response(res, request, "GET")
         response = res.json()
         return res, response
 
@@ -61,35 +58,30 @@ class StorageObjectManager(object):
         if not params:
             params = {}
         request = url % url_params
-        LOG.info(f"HEADERS ARE: {self._get_headers()}")
-        LOG.info(f"DATA IS: {json.dumps(params)}")
         res = requests.post(request,
                              data=json.dumps(params),
                              headers=self._get_headers(),
                              verify=self._get_verify_cert())
-        res = self._check_response(res, request, False, params)
-        LOG.info(f"RES IN POST IS: {res.__dict__}")
+        res = self._check_response(res, request, "POST", params)
         response = None
         try:
             response = res.json()
         except ValueError:
             response = None
-        LOG.info(f"RESPONSE IN POST IS: {response}")
         return res, response
 
     def execute_powerflex_delete_request(self, url, **url_params):
-      request = url % url_param
+      request = url % url_params
       res = requests.delete(request,
                             headers=self._get_headers(),
                             verify=self._get_verify_cert())
-      res = self._check_response(res, request)
-      response = res.json()
-      return res, response
+      res = self._check_response(res, request, "DELETE")
+      return res
 
     def _check_response(self,
                         response,
                         request,
-                        is_get_request=True,
+                        request_type,
                         params=None):
         login_url = "/auth/login"
 
@@ -103,7 +95,6 @@ class StorageObjectManager(object):
             payload = json.dumps({"username": self.rest_username,
                                    "password": self.rest_password
                       })
-            LOG.info(f"PAYLOAD IN CHECK IS: {self._get_headers()}")
             res = requests.post(login_request,
                                 headers=self._get_headers(),
                                 data=payload,
@@ -119,19 +110,22 @@ class StorageObjectManager(object):
                 token = res.json()["access_token"]
                 self.rest_token = token
                 self.got_token = True
-                LOG.info(f"TOKEN IS: {self.rest_token} AND GOT_TOKEN IS: {self.got_token}")
                 LOG.info("Going to perform request again %s with valid token.",
                     request)
-                if is_get_request:
-                    response = requests.get(request,
-                                            headers=self._get_headers(),
-                                            verify=verify_cert)
-                else:
-                    response = requests.post(request,
-                                             headers=self._get_headers(),
-                                             data=json.dumps(params),
-                                             verify=verify_cert)
-                    LOG.info(f"HEADERS IN CHECK ARE: {self._get_headers()}")
+                match request_type:
+                    case "GET":
+                        response = requests.get(request,
+                                                headers=self._get_headers(),
+                                                verify=verify_cert)
+                    case "POST":
+                        response = requests.post(request,
+                                                 headers=self._get_headers(),
+                                                 data=json.dumps(params),
+                                                 verify=verify_cert)
+                    case "DELETE":
+                        response = requests.delete(request,
+                                                   headers=self._get_headers(),
+                                                   verify=verify_cert)
                 level = logging.DEBUG
                 if response.status_code != http_client.OK:
                     level = logging.ERROR
@@ -143,7 +137,6 @@ class StorageObjectManager(object):
                         "REST RESPONSE: %s with params %s",
                         response.status_code,
                         response.text)
-                LOG.info(f"RESPONSE IN CHECK IS: {response.__dict__}")
         return response
 
     def _get_verify_cert(self):
@@ -165,7 +158,7 @@ class StorageObjectManager(object):
                   "name": name,
                   "size_total": size,
                   #todo: get the storage pool ID
-                  "storage_pool_id": "419274ec00000000",
+                  "storage_pool_id": "28515fee00000000",
                   "nas_server_id": nas_server_id
                  }
         url = self.base_url + '/v1/file-systems'
@@ -191,27 +184,24 @@ class StorageObjectManager(object):
         if res.status_code == 201:
             return response["id"] 
 
-    def delete_filesystem(self, name):
+    def delete_filesystem(self, filesystem_id):
         """Delete a filesystem and all associated export.
 
-        :param name: name of the filesystem
+        :param filesystem_id: ID of the filesystem to delete
         """
-        filesystem_id = self.get_filesystem_id(name)
         url = self.base_url + \
               '/v1/file-systems/' + \
-              name
-        res, response = self.execute_powerflex_delete_request(url)
+              filesystem_id
+        res = self.execute_powerflex_delete_request(url)
         return res.status_code == 204
 
-
-    def delete_nfs_export(self, export_path):
+    def delete_nfs_export(self, name):
         """Delete an NFS export.
 
         :param export_path: a string specifying the desired export path
         :return: ID of the export if deleted successfully
         """
         nfs_export_id = self.get_nfs_export_id(export_path)
-        LOG.info(f"EXPORT ID: {export_id}")
 
     def get_nas_server_id(self, nas_server):
         """Retrieves the NAS server ID.
@@ -237,7 +227,7 @@ class StorageObjectManager(object):
         if res.status_code == 200:
             return response["name"] 
 
-    def get_filesystem_id(self, export_path):
+    def get_filesystem_id(self, name):
         """Retrieves an ID for a filesystem.
 
         :export_path: pathname of the filesystem
@@ -245,7 +235,7 @@ class StorageObjectManager(object):
         """
         url = self.base_url + \
               '/v1/file-systems?select=id&name=eq.' + \
-              export_path
+              name
         res, response = self.execute_powerflex_get_request(url)
         if res.status_code == 200:
             return response[0]['id']

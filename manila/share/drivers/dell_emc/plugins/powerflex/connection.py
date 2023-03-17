@@ -135,15 +135,14 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         pass
 
     def delete_share(self, context, share, share_server):
-        pass
-        """Is called to delete a share.
+        """Is called to delete a share."""
         if share['share_proto'].upper() == 'NFS':
             self._delete_nfs_share(share)
         else:
             message = (_('Unsupported share type: %(type)s.') %
                         {'type': share['share_proto']})
             LOG.error(message)
-            raise exception.InvalidShare(reason=message)"""
+            raise exception.InvalidShare(reason=message)
 
     def deny_access(self, context, share, access, share_server):
         pass
@@ -175,38 +174,41 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                                                            size_in_bytes)
             if not filesystem_id:
                 message = {
-                    _('The requested NFS export "%(share)s" was not created.') %
-                     {'share': share['name']}}
+                    _('The requested NFS export "%(export)s" was not created.') %
+                     {'export': share['name']}}
                 LOG.error(message)
                 raise exception.ShareBackendException(message)
             else:
-                share_id = self.manager.create_nfs_export(filesystem_id, share['name'])
-                if not share_id:
+                export_id = self.manager.create_nfs_export(filesystem_id, share['name'])
+                if not export_id:
                     message = (
-                        _('The requested NFS export "%(share)s" was not created.') %
-                         {'share': share['name']})
+                        _('The requested NFS export "%(export)s" was not created.') %
+                         {'export': share['name']})
                     LOG.error(message)
                     raise exception.ShareBackendException(msg=message)
-                share_path = self.manager.get_nfs_export_name(share_id)
-                location = '{0}:/{1}'.format(self.rest_ip, share_path)
+                export_path = self.manager.get_nfs_export_name(export_id)
+                location = '{0}:/{1}'.format(self.rest_ip, export_path)
             return location
         else:
             message = (
-                _('The requested size for "%(share)s must be bigger than 3GiB.') %
-                 {'share': share['name']})
+                _('The requested size for "%(export)s must be bigger than 3GiB.') %
+                 {'export': share['name']})
             LOG.error(message)
             raise exception.ShareBackendException(message)
 
     def _delete_nfs_share(self, share):
-        """Delete an NFS share and its associated filesystem."""
-        share_id = self.manager.get_nfs_export_id(share['name'])
-        if share_id is None:
-            message = ('Attempted to delete NFS Share "%s", but the share does '
+        """Delete a filesystem and its associated export."""
+        filesystem_id = self.manager.get_filesystem_id(share['name'])
+        if filesystem_id is None:
+            message = ('Attempted to delete NFS export "%s", but the export does '
                        'not appear to exist.')
             LOG.warning(message, share['name'])
         else:
-            export_deleted = self.manager.delete_nfs_export(share_id)
-            if not export_deleted:
-                message = _('Error deleting NFS exoport: %s') % share['name']
+            share_deleted = self.manager.delete_filesystem(filesystem_id)
+            LOG.debug(f"SHARE_DELETED IS: {share_deleted}")
+            if not share_deleted:
+                message = (
+                    _('Failed to delete NFS export "%(export)s".') %
+                     {'export': share['name']})
                 LOG.error(message)
                 raise exception.ShareBackendException(msg=message)
