@@ -19,7 +19,7 @@ import six
 from six.moves import http_client
 from six.moves import urllib
 
-
+from manila import exception
 from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -108,34 +108,42 @@ class StorageObjectManager(object):
                                 headers=self._get_headers(),
                                 data=payload,
                                 verify=verify_cert)
-            token = res.json()["access_token"]
-            self.rest_token = token
-            self.got_token = True
-            LOG.info(f"TOKEN IS: {self.rest_token} AND GOT_TOKEN IS: {self.got_token}")
-            LOG.info("Going to perform request again %s with valid token.",
-                     request)
-            if is_get_request:
-                response = requests.get(request,
-                                        headers=self._get_headers(),
-                                        verify=verify_cert)
+            if (res.status_code == http_client.UNAUTHORIZED or
+                    res.status_code == http_client.FORBIDDEN):
+                message = ("PowerFlex REST API access is still forbidden or "
+                          "unauthorized, there might be an issue with your "
+                          "credentials.")
+                LOG.error(message)
+                raise exception.NotAuthorized()
             else:
-                response = requests.post(request,
-                                        headers=self._get_headers(),
-                                        data=json.dumps(params),
-                                        verify=verify_cert)
-                LOG.info(f"HEADERS IN CHECK ARE: {self._get_headers()}")
-            level = logging.DEBUG
-            if response.status_code != http_client.OK:
-                level = logging.ERROR
-            LOG.log(level,
-                    "REST REQUEST: %s with params %s",
-                    request,
-                    json.dumps(params))
-            LOG.log(level,
-                    "REST RESPONSE: %s with params %s",
-                    response.status_code,
-                    response.text)
-            LOG.info(f"RESPONSE IN CHECK IS: {response.__dict__}")
+                token = res.json()["access_token"]
+                self.rest_token = token
+                self.got_token = True
+                LOG.info(f"TOKEN IS: {self.rest_token} AND GOT_TOKEN IS: {self.got_token}")
+                LOG.info("Going to perform request again %s with valid token.",
+                    request)
+                if is_get_request:
+                    response = requests.get(request,
+                                            headers=self._get_headers(),
+                                            verify=verify_cert)
+                else:
+                    response = requests.post(request,
+                                             headers=self._get_headers(),
+                                             data=json.dumps(params),
+                                             verify=verify_cert)
+                    LOG.info(f"HEADERS IN CHECK ARE: {self._get_headers()}")
+                level = logging.DEBUG
+                if response.status_code != http_client.OK:
+                    level = logging.ERROR
+                LOG.log(level,
+                        "REST REQUEST: %s with params %s",
+                        request,
+                        json.dumps(params))
+                LOG.log(level,
+                        "REST RESPONSE: %s with params %s",
+                        response.status_code,
+                        response.text)
+                LOG.info(f"RESPONSE IN CHECK IS: {response.__dict__}")
         return response
 
     def _get_verify_cert(self):
@@ -182,6 +190,19 @@ class StorageObjectManager(object):
         res, response = self.execute_powerflex_post_request(url, params)
         if res.status_code == 201:
             return response["id"] 
+
+    def delete_filesystem(self, name):
+        """Delete a filesystem and all associated export.
+
+        :param name: name of the filesystem
+        """
+        filesystem_id = self.get_filesystem_id(name)
+        url = self.base_url + \
+              '/v1/file-systems/' + \
+              name
+        res, response = self.execute_powerflex_delete_request(url)
+        return res.status_code == 204
+
 
     def delete_nfs_export(self, export_path):
         """Delete an NFS export.
@@ -241,6 +262,3 @@ class StorageObjectManager(object):
         res, response = self.execute_powerflex_get_request(url)
         if res.status_code == 200:
             return response[0]['id']
-
-    def delete_nfs_share(self):
-        pass

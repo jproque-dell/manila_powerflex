@@ -165,7 +165,8 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def _create_nfs_share(self, share):
         """Create an NFS share. 
-           In PowerFlex, an exporti(share) belongs to a filesystem. """
+           In PowerFlex, an export(share) belongs to a filesystem. 
+           This function creates a filesystem and an export."""
         size_in_bytes = share['size'] * 1024 * 1024 * 1024
         # Minimum size is 3GiB, that is 3221225472 bytes
         if size_in_bytes >= 3221225472:
@@ -197,7 +198,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             raise exception.ShareBackendException(message)
 
     def _delete_nfs_share(self, share):
-        """Delete an NFS share."""
+        """Delete an NFS share and its associated filesystem."""
         share_id = self.manager.get_nfs_export_id(share['name'])
         if share_id is None:
             message = ('Attempted to delete NFS Share "%s", but the share does '
