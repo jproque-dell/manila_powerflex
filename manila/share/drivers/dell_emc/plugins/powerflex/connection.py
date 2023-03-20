@@ -90,7 +90,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         if self.verify_certificate and not self.certificate_path:
             message = _("Path to REST server's certificate must be specified.")
             raise exception.InvalidInput(reason=msg)
-        self.base_url = ("https://%(server_ip)s:%(server_port)s/rest" %
+        self.host_url = ("https://%(server_ip)s:%(server_port)s" %
                          {
                              "server_ip": self.rest_ip,
                              "server_port": self.rest_port
@@ -105,7 +105,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                      "verify_cert": self.verify_certificate,
                  })
 
-        self.manager = manager.StorageObjectManager(self.base_url,
+        self.manager = manager.StorageObjectManager(self.host_url,
                                                     self.rest_username,
                                                     self.rest_password,
                                                     self.export_path,
@@ -169,7 +169,12 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         size_in_bytes = share['size'] * 1024 * 1024 * 1024
         # Minimum size is 3GiB, that is 3221225472 bytes
         if size_in_bytes >= 3221225472:
-            filesystem_id = self.manager.create_filesystem(self.nas_server,
+            storage_pool_id = self.manager.get_storage_pool_id(
+                self.protection_domain,
+                self.storage_pool)
+            LOG.debug(f"STORAGE POOL ID IS: {storage_pool_id}")
+            filesystem_id = self.manager.create_filesystem(storage_pool_id,
+                                                           self.nas_server,
                                                            share['name'],
                                                            size_in_bytes)
             if not filesystem_id:

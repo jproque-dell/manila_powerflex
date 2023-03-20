@@ -26,8 +26,9 @@ LOG = logging.getLogger(__name__)
 
 class StorageObjectManager(object):
 
-    def __init__(self, api_url, username, password, export_path, verify_ssl_cert=False):
-        self.base_url = api_url
+    def __init__(self, host_url, username, password, export_path, verify_ssl_cert=False):
+        self.host_url = host_url
+        self.base_url = host_url + '/rest'
         self.rest_username = username
         self.rest_password = password
         self.rest_token = None
@@ -58,6 +59,8 @@ class StorageObjectManager(object):
         if not params:
             params = {}
         request = url % url_params
+        LOG.debug(f"URL IS: {request}")
+        LOG.debug(f"PARAMS ARE: {params}")
         res = requests.post(request,
                              data=json.dumps(params),
                              headers=self._get_headers(),
@@ -67,7 +70,9 @@ class StorageObjectManager(object):
         try:
             response = res.json()
         except ValueError:
-            response = None
+            # Particular case for get_storage_pool_id which is not 
+            # a json object but a string
+            response = res
         return res, response
 
     def execute_powerflex_delete_request(self, url, **url_params):
@@ -107,6 +112,8 @@ class StorageObjectManager(object):
                 LOG.error(message)
                 raise exception.NotAuthorized()
             else:
+                LOG.debug(f"URL IS: {request}")
+                LOG.debug(f"RES IS: {res.__dict__}")
                 token = res.json()["access_token"]
                 self.rest_token = token
                 self.got_token = True
@@ -145,7 +152,8 @@ class StorageObjectManager(object):
             verify_cert = self.certificate_path
         return verify_cert
 
-    def create_filesystem(self, nas_server, name, size):
+    def create_filesystem(self, storage_pool_id, nas_server, name, size):
+    #def create_filesystem(self, nas_server, name, size):
         """Create a filesystem
         
         :param nas_server: name of the nas_server
@@ -158,7 +166,8 @@ class StorageObjectManager(object):
                   "name": name,
                   "size_total": size,
                   #todo: get the storage pool ID
-                  "storage_pool_id": "28515fee00000000",
+                  "storage_pool_id": storage_pool_id,
+                  #"storage_pool_id": "28515fee00000000",
                   "nas_server_id": nas_server_id
                  }
         url = self.base_url + '/v1/file-systems'
@@ -252,3 +261,21 @@ class StorageObjectManager(object):
         res, response = self.execute_powerflex_get_request(url)
         if res.status_code == 200:
             return response[0]['id']
+
+    def get_storage_pool_id(self, protection_domain, storage_pool):
+        """Retrieves the Storage Pool ID.
+
+        :param protection_domain: Protection domain name
+        :storage_pool: Storage pool name
+        :return: ID of the storage pool
+        """
+        params = {
+                  "protectionDomainName": protection_domain,
+                  "name": storage_pool
+                 }     
+        url = self.host_url + \
+              '/api/types/StoragePool/instances/action/queryIdByKey'
+        res, response = self.execute_powerflex_post_request(url, params)
+        LOG.debug(f"RESPONSE IN GET_STORAGE_POOL_ID IS : {response}")
+        if res.status_code == 200:
+            return response
