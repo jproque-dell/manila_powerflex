@@ -177,7 +177,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         """Create an NFS share. 
            In PowerFlex, an export (share) belongs to a filesystem. 
            This function creates a filesystem and an export."""
-        size_in_bytes = share['size'] * 1024 * 1024 * 1024
+        size_in_bytes = share['size'] * units.Gi
         # Minimum size is 3GiB, that is 3221225472 bytes
         if size_in_bytes >= 3221225472:
             storage_pool_id = self.manager.get_storage_pool_id(
