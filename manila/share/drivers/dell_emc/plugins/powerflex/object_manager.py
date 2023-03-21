@@ -214,6 +214,19 @@ class StorageObjectManager(object):
         res = self.execute_powerflex_delete_request(url)
         return res.status_code == 204
 
+    def create_snapshot(self, filesystem_id):
+        """Creates a snapshot of a filesystem.
+
+        :param filesystem_id: ID of the filesystem
+        :return: ID of the snapshot if created successfully
+        """
+        url = self.base_url + \
+            '/v1/file-systems/' + \
+            filesystem_id + \
+            '/snapshot'
+        res, response = self.execute_powerflex_post_request(url)
+        return res.status_code == 201
+
     def get_nas_server_id(self, nas_server):
         """Retrieves the NAS server ID.
 
@@ -313,6 +326,18 @@ class StorageObjectManager(object):
               '/v1/file-systems/' + \
               export_id
         res = self.execute_powerflex_patch_request(url, params)
-        LOG.debug(f"RES IS: {res.__dict__}")
         return res.status_code == 205
+
+    def get_fsid_from_export_name(self, export_name):
+        """Retieves the Filesystem ID used by an export.
+
+        :param export_name: name of the export
+        :return: ID of the Filesystem which owns the export
+        """
+        url = self.base_url + \
+              '/v1/nfs-exports?select=file_system_id&name=eq.' + \
+              export_name
+        res, response = self.execute_powerflex_get_request(url)
+        if res.status_code == 200:
+            return response[0]['file_system_id']
 

@@ -139,9 +139,16 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             raise exception.InvalidShare(reason=message)
 
     def create_snapshot(self, context, snapshot, share_server):
-        pass
+       """Is called to create snapshot."""
+       export_name = snapshot['share_name']
+       filesystem_id = self.manager.get_fsid_from_export_name(export_name)
+       snapshot_id = self.manager.create_snapshot(filesystem_id)
+       if snapshot_id:
+           LOG.info("Snapshot %(id)s successfully created.",
+                    {'id': snapshot['id']})
 
     def delete_snapshot(self, context, snapshot, share_server):
+        """"Is called to delete snapshot."""
         pass
 
     def delete_share(self, context, share, share_server):
