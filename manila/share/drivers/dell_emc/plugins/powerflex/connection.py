@@ -43,7 +43,18 @@ POWERFLEX_OPTS = [
     cfg.StrOpt('powerflex_storage_pool',
                help='Storage pool used to provision NAS.'),
     cfg.StrOpt('powerflex_protection_domain',
-               help='Protection domaian to use.')
+               help='Protection domaian to use.'),
+    cfg.StrOpt('dell_nas_backend_host',
+               help='Dell NAS backend hostname or IP address.'),
+    cfg.StrOpt('dell_nas_backend_port',
+               help='Port number to use with the Dell NAS backend.'),
+    cfg.StrOpt('dell_nas_server',
+               help='Root directory or NAS server which owns the shares.'),
+    cfg.StrOpt('dell_nas_login',
+               help='User name for the Dell NAS backend.'),
+    cfg.StrOpt('dell_nas_password',
+               help='Password for the Dell NAS backend.')
+
 ]
 
 
@@ -73,14 +84,14 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         config = dell_share_driver.configuration
         get_config_value = config.safe_get
         self.verify_certificates = get_config_value("dell_ssl_cert_verify")
-        self.rest_ip = get_config_value("emc_nas_server")
-        self.rest_port = (int(get_config_value("emc_nas_server_port")) or
+        self.rest_ip = get_config_value("dell_nas_backend_host")
+        self.rest_port = (int(get_config_value("dell_nas_backend_port")) or
                          443)
-        self.nas_server = get_config_value("emc_nas_root_dir")
+        self.nas_server = get_config_value("dell_nas_server")
         self.storage_pool = get_config_value("powerflex_storage_pool")
         self.protection_domain = get_config_value("powerflex_protection_domain")
-        self.rest_username = get_config_value("emc_nas_login")
-        self.rest_password = get_config_value("emc_nas_password")
+        self.rest_username = get_config_value("dell_nas_login")
+        self.rest_password = get_config_value("dell_nas_password")
         if self.verify_certificate:
             self.certificate_path = get_config_value("dell_ssl_cert_pathicate_path")
         if not all([self.rest_ip, self.rest_username, self.rest_password]):
