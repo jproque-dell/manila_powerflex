@@ -76,12 +76,23 @@ class StorageObjectManager(object):
         return res, response
 
     def execute_powerflex_delete_request(self, url, **url_params):
-      request = url % url_params
-      res = requests.delete(request,
+        request = url % url_params
+        res = requests.delete(request,
+                              headers=self._get_headers(),
+                              verify=self._get_verify_cert())
+        res = self._check_response(res, request, "DELETE")
+        return res
+
+    def execute_powerflex_patch_request(self, url, params=None, **url_params):
+        if not params:
+            params = {}
+        request = url % url_params
+        res =requests.patch(request,
+                            data=json.dumps(params),
                             headers=self._get_headers(),
                             verify=self._get_verify_cert())
-      res = self._check_response(res, request, "DELETE")
-      return res
+        res = self._check_response(res, request, "PATCH")
+        return res
 
     def _check_response(self,
                         response,
@@ -133,6 +144,10 @@ class StorageObjectManager(object):
                         response = requests.delete(request,
                                                    headers=self._get_headers(),
                                                    verify=verify_cert)
+                    case "PATCH":
+                        response = requests.patch(request,
+                                                  headers=self._get_headers(),
+                                                  verify=verify_cert)
                 level = logging.DEBUG
                 if response.status_code != http_client.OK:
                     level = logging.ERROR
@@ -153,8 +168,7 @@ class StorageObjectManager(object):
         return verify_cert
 
     def create_filesystem(self, storage_pool_id, nas_server, name, size):
-    #def create_filesystem(self, nas_server, name, size):
-        """Create a filesystem
+        """Create a filesystem.
         
         :param nas_server: name of the nas_server
         :param name: name of the filesystem
@@ -165,9 +179,7 @@ class StorageObjectManager(object):
         params = {
                   "name": name,
                   "size_total": size,
-                  #todo: get the storage pool ID
                   "storage_pool_id": storage_pool_id,
-                  #"storage_pool_id": "28515fee00000000",
                   "nas_server_id": nas_server_id
                  }
         url = self.base_url + '/v1/file-systems'
@@ -180,7 +192,7 @@ class StorageObjectManager(object):
         .
         :param filesystem_id: ID of the filesystem on which
                               the export will be created
-        :param name: 
+        :param name: name of the NFS export
         :return: ID of the export if created successfully
         """
         params = {
@@ -197,6 +209,7 @@ class StorageObjectManager(object):
         """Delete a filesystem and all associated export.
 
         :param filesystem_id: ID of the filesystem to delete
+        :return: True if success
         """
         url = self.base_url + \
               '/v1/file-systems/' + \
@@ -204,19 +217,11 @@ class StorageObjectManager(object):
         res = self.execute_powerflex_delete_request(url)
         return res.status_code == 204
 
-    def delete_nfs_export(self, name):
-        """Delete an NFS export.
-
-        :param export_path: a string specifying the desired export path
-        :return: ID of the export if deleted successfully
-        """
-        nfs_export_id = self.get_nfs_export_id(export_path)
-
     def get_nas_server_id(self, nas_server):
         """Retrieves the NAS server ID.
 
-        :param nas_server: a string specifying the NAS server name 
-        :return: ID of the NAS server
+        :param nas_server: NAS server name 
+        :return: ID of the NAS server if success
         """
         url = self.base_url + \
               '/v1/nas-servers?select=id&name=eq.' + \
@@ -228,8 +233,8 @@ class StorageObjectManager(object):
     def get_nfs_export_name(self, export_id):
         """Retrieves NFS Export name.
 
-        :export_id: id of the export
-        :return: path of the export
+        :param export_id: ID of the NFS export
+        :return: path of the NFS export if success
         """
         url = self.base_url + '/v1/nfs-exports/' + export_id + '?select=*'
         res, response = self.execute_powerflex_get_request(url)
@@ -239,8 +244,8 @@ class StorageObjectManager(object):
     def get_filesystem_id(self, name):
         """Retrieves an ID for a filesystem.
 
-        :export_path: pathname of the filesystem
-        :return: ID of the filesystem
+        :param export_path: pathname of the filesystem
+        :return: ID of the filesystem if success
         """
         url = self.base_url + \
               '/v1/file-systems?select=id&name=eq.' + \
@@ -252,8 +257,8 @@ class StorageObjectManager(object):
     def get_nfs_export_id(self, export_name):
         """Retrieves NFS Export ID.
 
-        :export_name: name of the export
-        :return: id of the export
+        :param export_name: name of the NFS export
+        :return: id of the NFS export if success
         """
         url = self.base_url + \
               '/v1/nfs-exports?select=id&name=eq.' + \
@@ -265,9 +270,9 @@ class StorageObjectManager(object):
     def get_storage_pool_id(self, protection_domain, storage_pool):
         """Retrieves the Storage Pool ID.
 
-        :param protection_domain: Protection domain name
-        :storage_pool: Storage pool name
-        :return: ID of the storage pool
+        :param protection_domain: protection domain name
+        :param storage_pool: storage pool name
+        :return: ID of the storage pool if success
         """
         params = {
                   "protectionDomainName": protection_domain,
@@ -276,6 +281,23 @@ class StorageObjectManager(object):
         url = self.host_url + \
               '/api/types/StoragePool/instances/action/queryIdByKey'
         res, response = self.execute_powerflex_post_request(url, params)
-        LOG.debug(f"RESPONSE IN GET_STORAGE_POOL_ID IS : {response}")
         if res.status_code == 200:
             return response
+
+    def set_export_access(self, export_id, rw_hosts, ro_hosts):
+        """Set the authorization access to the export.
+
+        :param name: NFS export ID
+        :param rw_hosts: a set of RW hosts
+        :param ro_hosts: a set of RO hosts
+        :return: True if Success
+        """
+        params = {
+                  "read_only_hosts": list(ro_hosts),
+                  "read_write_hosts": list(rw_hosts)
+                 }
+        url = self.base_url + \
+              '/v1/nfs-exports/' + \
+              export_id
+        res = self.execute_powerflex_patch_request(url, params)
+        return res.status_code == 204

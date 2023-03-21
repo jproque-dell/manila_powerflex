@@ -119,7 +119,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             location = self._create_nfs_share(share)
         else:
             message = (_('Unsupported share protocol: %(proto)s.') %
-                       {'proto': share['share_proto']})
+                        {'proto': share['share_proto']})
             LOG.error(message)
             raise exception.InvalidShare(reason=message)
 
@@ -127,6 +127,17 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def allow_access(self, context, share, access, share_server):
         pass
+    
+    def update_access(self, context, share, access_rules, add_rules,
+                      delete_rules, share_server=None):
+        """Update share access."""
+        if share['share_proto'].upper() == 'NFS':
+            self._update_nfs_access(share, access_rules)
+        else:
+            message = (_('Unsupported share protocol: %(proto)s.') %
+                        {'proto': share['share_proto']})
+            LOG.error(message)
+            raise exception.InvalidShare(reason=message)
 
     def create_snapshot(self, context, snapshot, share_server):
         pass
@@ -164,7 +175,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def _create_nfs_share(self, share):
         """Create an NFS share. 
-           In PowerFlex, an export(share) belongs to a filesystem. 
+           In PowerFlex, an export (share) belongs to a filesystem. 
            This function creates a filesystem and an export."""
         size_in_bytes = share['size'] * 1024 * 1024 * 1024
         # Minimum size is 3GiB, that is 3221225472 bytes
@@ -172,7 +183,6 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             storage_pool_id = self.manager.get_storage_pool_id(
                 self.protection_domain,
                 self.storage_pool)
-            LOG.debug(f"STORAGE POOL ID IS: {storage_pool_id}")
             filesystem_id = self.manager.create_filesystem(storage_pool_id,
                                                            self.nas_server,
                                                            share['name'],
@@ -210,10 +220,42 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             LOG.warning(message, share['name'])
         else:
             share_deleted = self.manager.delete_filesystem(filesystem_id)
-            LOG.debug(f"SHARE_DELETED IS: {share_deleted}")
             if not share_deleted:
                 message = (
                     _('Failed to delete NFS export "%(export)s".') %
                      {'export': share['name']})
+                LOG.error(message)
+                raise exception.ShareBackendException(msg=message)
+
+    def _update_nfs_access(self, share, access_rules):
+        """Update access rules for NFS share type."""
+        nfs_rw_ips = set()
+        nfs_ro_ips = set()
+        rule_access_map = {}
+        
+        # TODO: Add a check to prevent non IP based type access
+        for rule in access_rules:
+            if rule['access_type'].lower() != 'ip':
+                message = (_("Only IP access type currently supported for "
+                             "NFS. Share provided %(share)s with rule type "
+                             "%(type)s") % {'share': share['display_name'],
+                                            'type': rule['access_type']})
+                LOG.error(message)
+                raise exception.InvalidShareAccess(reason=message)
+
+            else:
+                if rule['access_level'] == 'rw':
+                    nfs_rw_ips.add(rule['access_to'])
+                elif rule['access_level'] == 'ro':
+                    nfs_ro_ips.add(rule['access_to'])
+
+            share_id = self.manager.get_nfs_export_id(share['name']) 
+            share_updated = self.manager.set_export_access(share_id,
+                                                           nfs_rw_ips,
+                                                           nfs_ro_ips)
+            if not share_updated:
+                message = (
+                    _('Failed to update NFS access rules for "%(export)s".') %
+                     {'export': share['display_name']})
                 LOG.error(message)
                 raise exception.ShareBackendException(msg=message)
