@@ -59,8 +59,6 @@ class StorageObjectManager(object):
         if not params:
             params = {}
         request = url % url_params
-        LOG.debug(f"URL IS: {request}")
-        LOG.debug(f"PARAMS ARE: {params}")
         res = requests.post(request,
                              data=json.dumps(params),
                              headers=self._get_headers(),
@@ -87,10 +85,10 @@ class StorageObjectManager(object):
         if not params:
             params = {}
         request = url % url_params
-        res =requests.patch(request,
-                            data=json.dumps(params),
-                            headers=self._get_headers(),
-                            verify=self._get_verify_cert())
+        res = requests.patch(request,
+                             data=json.dumps(params),
+                             headers=self._get_headers(),
+                             verify=self._get_verify_cert())
         res = self._check_response(res, request, "PATCH")
         return res
 
@@ -123,8 +121,6 @@ class StorageObjectManager(object):
                 LOG.error(message)
                 raise exception.NotAuthorized()
             else:
-                LOG.debug(f"URL IS: {request}")
-                LOG.debug(f"RES IS: {res.__dict__}")
                 token = res.json()["access_token"]
                 self.rest_token = token
                 self.got_token = True
@@ -147,6 +143,7 @@ class StorageObjectManager(object):
                     case "PATCH":
                         response = requests.patch(request,
                                                   headers=self._get_headers(),
+                                                  data=json.dumps(params),
                                                   verify=verify_cert)
                 level = logging.DEBUG
                 if response.status_code != http_client.OK:
@@ -285,7 +282,7 @@ class StorageObjectManager(object):
             return response
 
     def set_export_access(self, export_id, rw_hosts, ro_hosts):
-        """Set the authorization access to the export.
+        """Sets the authorization access to the export.
 
         :param name: NFS export ID
         :param rw_hosts: a set of RW hosts
@@ -301,3 +298,21 @@ class StorageObjectManager(object):
               export_id
         res = self.execute_powerflex_patch_request(url, params)
         return res.status_code == 204
+
+    def extend_export(self, export_id, new_size):
+        """Extends the size of a share to a new size.
+
+        :param export_id: ID of the NFS export
+        :param new_size: new size to allocate in bytes
+        :return: True if successfully extended
+        """
+        params = {
+                  "size_total": new_size
+                 }
+        url = self.base_url + \
+              '/v1/file-systems/' + \
+              export_id
+        res = self.execute_powerflex_patch_request(url, params)
+        LOG.debug(f"RES IS: {res.__dict__}")
+        return res.status_code == 205
+

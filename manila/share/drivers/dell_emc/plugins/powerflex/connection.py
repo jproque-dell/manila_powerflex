@@ -114,7 +114,6 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def create_share(self, context, share, share_server):
         """Is called to create a share."""
-        LOG.info(f"SHARE SERVER IS: {share_server}")
         if share['share_proto'].upper() == 'NFS':
             location = self._create_nfs_share(share)
         else:
@@ -162,7 +161,11 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         pass
 
     def extend_share(self, share, new_size, share_server=None):
-        pass
+        """Extends a share."""
+        new_size_in_bytes = new_size * units.Gi
+        filesystem_id = self.manager.get_filesystem_id(share['name'])
+        self.manager.extend_export(filesystem_id,
+                                   new_size_in_bytes)
 
     def setup_server(self, network_info, metadata=None):
         pass
@@ -233,7 +236,6 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         nfs_ro_ips = set()
         rule_access_map = {}
         
-        # TODO: Add a check to prevent non IP based type access
         for rule in access_rules:
             if rule['access_type'].lower() != 'ip':
                 message = (_("Only IP access type currently supported for "
