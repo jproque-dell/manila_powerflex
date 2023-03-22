@@ -264,9 +264,9 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                 raise exception.InvalidShareAccess(reason=message)
 
             else:
-                if rule['access_level'] == 'rw':
+                if rule['access_level'] == const.ACCESS_LEVEL_RW:
                     nfs_rw_ips.add(rule['access_to'])
-                elif rule['access_level'] == 'ro':
+                elif rule['access_level'] == const.ACCESS_LEVEL_RO:
                     nfs_ro_ips.add(rule['access_to'])
 
             share_id = self.manager.get_nfs_export_id(share['name']) 
