@@ -84,7 +84,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def connect(self, dell_share_driver, context):
         """Connect to PowerFlex SDNAS server."""
-        LOG.debug("Reading config parameters for Manila Dell PowerFlex SDNAS Driver.")
+        LOG.debug("Reading configuration parameters for Manila Dell PowerFlex SDNAS Driver.")
         config = dell_share_driver.configuration
         get_config_value = config.safe_get
         self.verify_certificates = get_config_value("dell_ssl_cert_verify")
