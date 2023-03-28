@@ -16,18 +16,16 @@
 """
 PowerFlex specific NAS backend plugin.
 """
-import os
 from oslo_config import cfg
 from oslo_log import log
 from oslo_utils import units
-from requests.exceptions import HTTPError
 
 from manila.common import constants as const
 from manila import exception
 from manila.i18n import _
 from manila.share.drivers.dell_emc.plugins import base as driver
 from manila.share.drivers.dell_emc.plugins.powerflex import (
-    object_manager as manager )
+    object_manager as manager)
 
 """Version history:
     1.0 - Initial version
@@ -62,7 +60,12 @@ class PowerFlexStorageConnection(driver.StorageConnection):
     """Implements PowerFlex specific functionality for Dell Manila driver."""
 
     def __init__(self, *args, **kwargs):
+        """Do initialization"""
+
+        LOG.debug("Invoking base constructor for Manila PowerFlex SDNAS Driver.")
         super(PowerFlexStorageConnection, self).__init__(*args, **kwargs)
+
+        LOG.debug("Setting up attributes for Manila PowerFlex SDNAS Driver.")
         if 'configuration' in kwargs:
             kwargs['configuration'].append_config_values(POWERFLEX_OPTS)
 
@@ -81,31 +84,38 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def connect(self, dell_share_driver, context):
         """Connect to PowerFlex SDNAS server."""
+        LOG.debug("Reading config parameters for Manila PowerFlex SDNAS Driver.")
         config = dell_share_driver.configuration
         get_config_value = config.safe_get
         self.verify_certificates = get_config_value("dell_ssl_cert_verify")
         self.rest_ip = get_config_value("dell_nas_backend_host")
         self.rest_port = (int(get_config_value("dell_nas_backend_port")) or
-                         443)
+                          443)
         self.nas_server = get_config_value("dell_nas_server")
         self.storage_pool = get_config_value("powerflex_storage_pool")
-        self.protection_domain = get_config_value("powerflex_protection_domain")
+        self.protection_domain = get_config_value(
+            "powerflex_protection_domain")
         self.rest_username = get_config_value("dell_nas_login")
         self.rest_password = get_config_value("dell_nas_password")
         if self.verify_certificate:
-            self.certificate_path = get_config_value("dell_ssl_cert_pathicate_path")
-        if not all([self.rest_ip, self.rest_username, self.rest_password]):
-            message = _("REST server IP, username and password must be specified.")
+            self.certificate_path = get_config_value(
+                "dell_ssl_cert_pathicate_path")
+        if not all([self.rest_ip,
+                    self.rest_username,
+                    self.rest_password]):
+            message = _("REST server IP, username and password"
+                        " must be specified.")
             raise exception.InvalidInput(reason=message)
         # validate certificate settings
         if self.verify_certificate and not self.certificate_path:
             message = _("Path to REST server's certificate must be specified.")
-            raise exception.InvalidInput(reason=msg)
+            raise exception.InvalidInput(reason=message)
+
+        LOG.debug("Initializing Dell PowerFlex SDNAS Layer.")
         self.host_url = ("https://%(server_ip)s:%(server_port)s" %
                          {
                              "server_ip": self.rest_ip,
-                             "server_port": self.rest_port
-                        })
+                             "server_port": self.rest_port})
         LOG.info("REST server IP: %(ip)s, port: %(port)s, "
                  "username: %(user)s. Verify server's certificate: "
                  "%(verify_cert)s.",
@@ -122,22 +132,26 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                                                     self.export_path,
                                                     self.verify_certificate)
 
-
     def create_share(self, context, share, share_server):
         """Is called to create a share."""
         if share['share_proto'].upper() == 'NFS':
             location = self._create_nfs_share(share)
         else:
             message = (_('Unsupported share protocol: %(proto)s.') %
-                        {'proto': share['share_proto']})
+                       {'proto': share['share_proto']})
             LOG.error(message)
             raise exception.InvalidShare(reason=message)
 
         return location
 
+    def create_share_from_snapshot(self, context, share, snapshot,
+                                   share_server=None, parent_share=None):
+        """Is called to create a share from an existing snapshot."""
+        pass
+
     def allow_access(self, context, share, access, share_server):
         pass
-    
+
     def update_access(self, context, share, access_rules, add_rules,
                       delete_rules, share_server=None):
         """Update share access."""
@@ -145,22 +159,33 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             self._update_nfs_access(share, access_rules)
         else:
             message = (_('Unsupported share protocol: %(proto)s.') %
-                        {'proto': share['share_proto']})
+                       {'proto': share['share_proto']})
             LOG.error(message)
             raise exception.InvalidShare(reason=message)
 
     def create_snapshot(self, context, snapshot, share_server):
-       """Is called to create snapshot."""
-       export_name = snapshot['share_name']
-       filesystem_id = self.manager.get_fsid_from_export_name(export_name)
-       snapshot_id = self.manager.create_snapshot(filesystem_id)
-       if snapshot_id:
-           LOG.info("Snapshot %(id)s successfully created.",
-                    {'id': snapshot['id']})
+        """Is called to create snapshot."""
+        export_name = snapshot['share_name']
+        filesystem_id = self.manager.get_fsid_from_export_name(export_name)
+        snapshot_id = self.manager.create_snapshot(snapshot['name'], filesystem_id)
+        if snapshot_id:
+            LOG.info("Snapshot %(id)s successfully created.",
+                     {'id': snapshot['id']})
 
     def delete_snapshot(self, context, snapshot, share_server):
         """"Is called to delete snapshot."""
-        pass
+        snapshot_name = snapshot['name']
+        filesystem_id = self.manager.get_fsid_from_snapshot_name(snapshot_name)
+        snapshot_deleted = self.manager.delete_filesystem(filesystem_id)
+        if not snapshot_deleted:
+                message = (
+                    _('Failed to delete snapshot "%(snapshot)s".') %
+                    {'snapshot': snapshot['name']})
+                LOG.error(message)
+                raise exception.ShareBackendException(msg=message)
+        else:
+            LOG.info("Snapshot %(id)s successfully deleted.",
+                     {'id': snapshot['id']})
 
     def delete_share(self, context, share, share_server):
         """Is called to delete a share."""
@@ -168,7 +193,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             self._delete_nfs_share(share)
         else:
             message = (_('Unsupported share type: %(type)s.') %
-                        {'type': share['share_proto']})
+                       {'type': share['share_proto']})
             LOG.error(message)
             raise exception.InvalidShare(reason=message)
 
@@ -195,9 +220,9 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         pass
 
     def _create_nfs_share(self, share):
-        """Create an NFS share. 
-           In PowerFlex, an export (share) belongs to a filesystem. 
-           This function creates a filesystem and an export."""
+        """Create an NFS share.
+        In PowerFlex, an export (share) belongs to a filesystem.
+        This function creates a filesystem and an export."""
         size_in_bytes = share['size'] * units.Gi
         # Minimum size is 3GiB, that is 3221225472 bytes
         if size_in_bytes >= 3221225472:
@@ -210,16 +235,19 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                                                            size_in_bytes)
             if not filesystem_id:
                 message = {
-                    _('The requested NFS export "%(export)s" was not created.') %
-                     {'export': share['name']}}
+                    _('The requested NFS export "%(export)s"'
+                      ' was not created.') %
+                    {'export': share['name']}}
                 LOG.error(message)
                 raise exception.ShareBackendException(message)
             else:
-                export_id = self.manager.create_nfs_export(filesystem_id, share['name'])
+                export_id = self.manager.create_nfs_export(filesystem_id,
+                                                           share['name'])
                 if not export_id:
                     message = (
-                        _('The requested NFS export "%(export)s" was not created.') %
-                         {'export': share['name']})
+                        _('The requested NFS export "%(export)s"'
+                          ' was not created.') %
+                        {'export': share['name']})
                     LOG.error(message)
                     raise exception.ShareBackendException(msg=message)
                 export_path = self.manager.get_nfs_export_name(export_id)
@@ -227,24 +255,26 @@ class PowerFlexStorageConnection(driver.StorageConnection):
             return location
         else:
             message = (
-                _('The requested size for "%(export)s must be bigger than 3GiB.') %
-                 {'export': share['name']})
+                _('The requested size for "%(export)s must be'
+                  ' bigger than 3GiB.') %
+                {'export': share['name']})
             LOG.error(message)
             raise exception.ShareBackendException(message)
 
     def _delete_nfs_share(self, share):
         """Delete a filesystem and its associated export."""
         filesystem_id = self.manager.get_filesystem_id(share['name'])
+        LOG.debug(f"FILESYSTEM_ID IS: {filesystem_id}")
         if filesystem_id is None:
-            message = ('Attempted to delete NFS export "%s", but the export does '
-                       'not appear to exist.')
+            message = ('Attempted to delete NFS export "%s",'
+                       ' but the export does not appear to exist.')
             LOG.warning(message, share['name'])
         else:
             share_deleted = self.manager.delete_filesystem(filesystem_id)
             if not share_deleted:
                 message = (
                     _('Failed to delete NFS export "%(export)s".') %
-                     {'export': share['name']})
+                    {'export': share['name']})
                 LOG.error(message)
                 raise exception.ShareBackendException(msg=message)
 
@@ -252,8 +282,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         """Update access rules for NFS share type."""
         nfs_rw_ips = set()
         nfs_ro_ips = set()
-        rule_access_map = {}
-        
+
         for rule in access_rules:
             if rule['access_type'].lower() != 'ip':
                 message = (_("Only IP access type currently supported for "
@@ -269,13 +298,13 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                 elif rule['access_level'] == const.ACCESS_LEVEL_RO:
                     nfs_ro_ips.add(rule['access_to'])
 
-            share_id = self.manager.get_nfs_export_id(share['name']) 
+            share_id = self.manager.get_nfs_export_id(share['name'])
             share_updated = self.manager.set_export_access(share_id,
                                                            nfs_rw_ips,
                                                            nfs_ro_ips)
             if not share_updated:
                 message = (
                     _('Failed to update NFS access rules for "%(export)s".') %
-                     {'export': share['display_name']})
+                    {'export': share['display_name']})
                 LOG.error(message)
                 raise exception.ShareBackendException(msg=message)
