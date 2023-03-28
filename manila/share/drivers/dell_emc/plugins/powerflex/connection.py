@@ -62,10 +62,10 @@ class PowerFlexStorageConnection(driver.StorageConnection):
     def __init__(self, *args, **kwargs):
         """Do initialization"""
 
-        LOG.debug("Invoking base constructor for Manila PowerFlex SDNAS Driver.")
+        LOG.debug("Invoking base constructor for Manila Dell PowerFlex SDNAS Driver.")
         super(PowerFlexStorageConnection, self).__init__(*args, **kwargs)
 
-        LOG.debug("Setting up attributes for Manila PowerFlex SDNAS Driver.")
+        LOG.debug("Setting up attributes for Manila Dell PowerFlex SDNAS Driver.")
         if 'configuration' in kwargs:
             kwargs['configuration'].append_config_values(POWERFLEX_OPTS)
 
@@ -84,7 +84,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def connect(self, dell_share_driver, context):
         """Connect to PowerFlex SDNAS server."""
-        LOG.debug("Reading config parameters for Manila PowerFlex SDNAS Driver.")
+        LOG.debug("Reading config parameters for Manila Dell PowerFlex SDNAS Driver.")
         config = dell_share_driver.configuration
         get_config_value = config.safe_get
         self.verify_certificates = get_config_value("dell_ssl_cert_verify")
