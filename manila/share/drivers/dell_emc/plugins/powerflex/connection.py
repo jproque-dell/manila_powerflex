@@ -154,6 +154,9 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         """Is called to allow access to a share."""
         raise NotImplementedError()
 
+    def check_for_setup_error(self):
+        """Is called to check for setup error."""
+
     def update_access(self, context, share, access_rules, add_rules,
                       delete_rules, share_server=None):
         """Is called to update share access."""
