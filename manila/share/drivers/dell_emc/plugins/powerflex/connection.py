@@ -218,7 +218,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
         """Is called to extend a share."""
         # Converts the size from GiB to Bytes
         new_size_in_bytes = new_size * units.Gi
-        LOG.debug(f"Extending {share['name']} to {new_size_in_bytes}")
+        LOG.debug(f"Extending {share['name']} to {new_size}GiB")
         filesystem_id = self.manager.get_filesystem_id(share['name'])
         self.manager.extend_export(filesystem_id,
                                    new_size_in_bytes)
