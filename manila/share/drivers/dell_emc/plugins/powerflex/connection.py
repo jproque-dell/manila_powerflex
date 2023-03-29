@@ -213,7 +213,6 @@ class PowerFlexStorageConnection(driver.StorageConnection):
 
     def ensure_share(self, context, share, share_server):
         """Is called to ensure a share is exported."""
-        raise NotImplementedError()
 
     def extend_share(self, share, new_size, share_server=None):
         """Is called to extend a share."""
