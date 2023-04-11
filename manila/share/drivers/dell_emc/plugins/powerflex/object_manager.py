@@ -333,7 +333,7 @@ class StorageObjectManager(object):
             '/v1/file-systems/' + \
             export_id
         res = self.execute_powerflex_patch_request(url, params)
-        return res.status_code == 205
+        return res.status_code == 204
 
     def get_fsid_from_export_name(self, name):
         """Retieves the Filesystem ID used by an export.
