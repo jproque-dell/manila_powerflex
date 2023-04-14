@@ -316,13 +316,13 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                 elif rule['access_level'] == const.ACCESS_LEVEL_RO:
                     nfs_ro_ips.add(rule['access_to'])
 
-            share_id = self.manager.get_nfs_export_id(share['name'])
-            share_updated = self.manager.set_export_access(share_id,
-                                                           nfs_rw_ips,
-                                                           nfs_ro_ips)
-            if not share_updated:
-                message = (
-                    _('Failed to update NFS access rules for "%(export)s".') %
-                    {'export': share['display_name']})
-                LOG.error(message)
-                raise exception.ShareBackendException(msg=message)
+        share_id = self.manager.get_nfs_export_id(share['name'])
+        share_updated = self.manager.set_export_access(share_id,
+                                                       nfs_rw_ips,
+                                                       nfs_ro_ips)
+        if not share_updated:
+            message = (
+                _('Failed to update NFS access rules for "%(export)s".') %
+                {'export': share['display_name']})
+            LOG.error(message)
+            raise exception.ShareBackendException(msg=message)
