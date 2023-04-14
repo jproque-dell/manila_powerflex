@@ -255,7 +255,7 @@ class PowerFlexStorageConnection(driver.StorageConnection):
                       ' was not created.') %
                     {'export': share['name']}}
                 LOG.error(message)
-                raise exception.ShareBackendException(message)
+                raise exception.ShareBackendException(msg=message)
             else:
                 LOG.debug(f"Creating export {share['name']}")
                 export_id = self.manager.create_nfs_export(filesystem_id,
